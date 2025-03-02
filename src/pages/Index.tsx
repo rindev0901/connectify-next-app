@@ -1,13 +1,33 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useEffect } from "react";
+import Navbar from "@/components/Navbar";
+import Hero from "@/components/Hero";
+import Features from "@/components/Features";
+import Footer from "@/components/Footer";
+import { AuthProvider } from "@/context/AuthContext";
 
 const Index = () => {
+  // Add smooth scroll behavior
+  useEffect(() => {
+    document.documentElement.style.scrollBehavior = 'smooth';
+    
+    return () => {
+      document.documentElement.style.scrollBehavior = 'auto';
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <AuthProvider>
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <main className="flex-grow">
+          <Hero />
+          <Features />
+          {/* Add more sections as needed */}
+        </main>
+        <Footer />
       </div>
-    </div>
+    </AuthProvider>
   );
 };
 
