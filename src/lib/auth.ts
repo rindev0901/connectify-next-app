@@ -1,29 +1,43 @@
 
-import { v4 as uuidv4 } from 'uuid';
+import { supabase } from "@/integrations/supabase/client";
+import { Provider } from "@supabase/supabase-js";
 
 export type SocialProvider = 'google' | 'facebook' | 'github';
 
-// Mock authentication functions for demonstration purposes
-// In a real application, these would connect to actual OAuth providers
+// Convert our SocialProvider type to Supabase Provider type
+const mapToSupabaseProvider = (provider: SocialProvider): Provider => {
+  switch (provider) {
+    case 'google':
+      return 'google';
+    case 'facebook':
+      return 'facebook';
+    case 'github':
+      return 'github';
+    default:
+      return 'google';
+  }
+};
 
-export const loginWithSocialProvider = async (provider: SocialProvider): Promise<any> => {
-  console.log(`Authenticating with ${provider}...`);
+export const loginWithSocialProvider = async (provider: SocialProvider) => {
+  console.log(`Authenticating with ${provider} using Supabase...`);
   
-  // Simulate API call
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Mock successful authentication
-      const mockUser = {
-        id: uuidv4(),
-        name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
-        email: `user@${provider}.com`,
-        avatar: `https://source.unsplash.com/random/100x100?face`,
-        provider: provider,
-      };
-      
-      resolve(mockUser);
-    }, 1000);
-  });
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: mapToSupabaseProvider(provider),
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      },
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error(`Error signing in with ${provider}:`, error);
+    throw error;
+  }
 };
 
 // Helper to get provider colors

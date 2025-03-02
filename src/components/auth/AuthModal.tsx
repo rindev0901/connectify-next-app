@@ -15,17 +15,18 @@ type AuthModalProps = {
 };
 
 const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
-  const { login } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"sign-in" | "sign-up">("sign-in");
 
   const handleSocialLogin = async (provider: SocialProvider) => {
     setIsLoading(true);
     try {
-      const user = await loginWithSocialProvider(provider);
-      login(user);
-      toast.success(`Successfully signed in with ${provider}`);
-      onClose();
+      await loginWithSocialProvider(provider);
+      // Note: We don't close the modal or set auth state here
+      // Supabase will redirect to OAuth provider, and on return
+      // the auth state will be updated via the onAuthStateChange listener
+      toast.success(`Redirecting to ${provider} for authentication...`);
     } catch (error) {
       toast.error(`Error signing in with ${provider}`);
       console.error("Login error:", error);
@@ -33,6 +34,12 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       setIsLoading(false);
     }
   };
+
+  // If user is already authenticated, close the modal
+  if (isAuthenticated && isOpen) {
+    onClose();
+    return null;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
