@@ -1,23 +1,75 @@
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/animations/FadeIn";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { UserAppMetadata, UserMetadata } from "@supabase/supabase-js";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Dashboard = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [users, setUsers] = useState<
+    Database["public"]["Views"]["user_info"]["Row"][]
+  >([]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/");
     }
   }, [isAuthenticated, isLoading, navigate]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .schema("public")
+          .from("user_info")
+          .select("*");
+
+        if (error) {
+          toast.error(error.name, {
+            description: error.message,
+          });
+          console.error("Error:::", error);
+          return;
+        }
+        console.log(data);
+        setUsers(data);
+      } catch (error) {
+        console.error("Error:::", error);
+      }
+    })();
+  }, []);
 
   if (isLoading) {
     return (
@@ -43,7 +95,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
-      
+
       <main className="flex-grow pt-20 pb-12">
         <div className="container mx-auto px-4 mt-8">
           <FadeIn>
@@ -75,7 +127,7 @@ const Dashboard = () => {
                   </p>
                 </CardContent>
               </Card>
-              
+
               <Card className="glass-card">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -89,7 +141,7 @@ const Dashboard = () => {
                   </p>
                 </CardContent>
               </Card>
-              
+
               <Card className="glass-card">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -115,7 +167,7 @@ const Dashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="performance">
+                <Tabs defaultValue="users">
                   <TabsList>
                     <TabsTrigger value="performance">Performance</TabsTrigger>
                     <TabsTrigger value="users">Users</TabsTrigger>
@@ -129,19 +181,73 @@ const Dashboard = () => {
                           <XAxis dataKey="name" />
                           <YAxis />
                           <Tooltip />
-                          <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                          <Bar
+                            dataKey="value"
+                            fill="hsl(var(--primary))"
+                            radius={[4, 4, 0, 0]}
+                          />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
                   </TabsContent>
                   <TabsContent value="users" className="pt-4">
                     <div className="h-[300px] flex items-center justify-center">
-                      <p className="text-muted-foreground">Users data visualization coming soon</p>
+                      {users.length > 0 ? (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>ID</TableHead>
+                              <TableHead>Email</TableHead>
+                              <TableHead>Full name</TableHead>
+                              <TableHead>Socials</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {users.map((user) => (
+                              <TableRow key={user.id}>
+                                <TableCell>{user.id}</TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <Avatar>
+                                      <AvatarImage
+                                        src={
+                                          (
+                                            user.raw_user_meta_data as UserMetadata
+                                          ).avatar_url
+                                        }
+                                      />
+                                      <AvatarFallback>CN</AvatarFallback>
+                                    </Avatar>
+                                    {user.email}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  {
+                                    (user.raw_user_meta_data as UserMetadata)
+                                      .full_name
+                                  }
+                                </TableCell>
+                                <TableCell>
+                                  {(
+                                    user.raw_app_meta_data as UserAppMetadata
+                                  ).providers.join(", ")}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      ) : (
+                        <p className="text-muted-foreground">
+                          Users data visualization coming soon
+                        </p>
+                      )}
                     </div>
                   </TabsContent>
                   <TabsContent value="revenue" className="pt-4">
                     <div className="h-[300px] flex items-center justify-center">
-                      <p className="text-muted-foreground">Revenue data visualization coming soon</p>
+                      <p className="text-muted-foreground">
+                        Revenue data visualization coming soon
+                      </p>
                     </div>
                   </TabsContent>
                 </Tabs>
@@ -161,18 +267,23 @@ const Dashboard = () => {
                 <CardContent>
                   <div className="space-y-4">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center gap-4 pb-4 border-b border-border last:border-0 last:pb-0">
+                      <div
+                        key={i}
+                        className="flex items-center gap-4 pb-4 border-b border-border last:border-0 last:pb-0"
+                      >
                         <div className="w-2 h-2 rounded-full bg-primary" />
                         <div className="flex-1">
                           <p className="text-sm">New user signed up #{i}</p>
-                          <p className="text-xs text-muted-foreground">2 hours ago</p>
+                          <p className="text-xs text-muted-foreground">
+                            2 hours ago
+                          </p>
                         </div>
                       </div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card className="glass-card">
                 <CardHeader>
                   <CardTitle>Quick Actions</CardTitle>
@@ -182,7 +293,12 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
-                    {["Create Project", "Invite Team", "API Settings", "Documentation"].map((action) => (
+                    {[
+                      "Create Project",
+                      "Invite Team",
+                      "API Settings",
+                      "Documentation",
+                    ].map((action) => (
                       <button
                         key={action}
                         className="p-4 border border-border hover:border-primary/50 rounded-lg text-center transition-colors"
@@ -197,7 +313,7 @@ const Dashboard = () => {
           </FadeIn>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

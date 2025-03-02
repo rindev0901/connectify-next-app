@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -22,8 +21,8 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-md border-b border-border/40">
-      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-50">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between bg-background">
         <Link to="/" className="flex items-center space-x-2">
           <span className="font-display font-bold text-xl">Nextify</span>
         </Link>
@@ -55,7 +54,10 @@ const Navbar = () => {
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative w-10 h-10 rounded-full p-0 overflow-hidden">
+                <Button
+                  variant="ghost"
+                  className="relative w-10 h-10 rounded-full p-0 overflow-hidden"
+                >
                   <Avatar className="h-10 w-10 transition-transform duration-300 hover:scale-105">
                     <AvatarImage src={user?.avatar} alt={user?.name} />
                     <AvatarFallback className="bg-primary/10 text-primary text-sm">
@@ -64,10 +66,16 @@ const Navbar = () => {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 glass-card" align="end" forceMount>
+              <DropdownMenuContent
+                className="w-56 glass-card"
+                align="end"
+                forceMount
+              >
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user?.name}</p>
+                    <p className="text-sm font-medium leading-none">
+                      {user?.name}
+                    </p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {user?.email}
                     </p>
@@ -75,10 +83,14 @@ const Navbar = () => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/dashboard" className="cursor-pointer">Dashboard</Link>
+                  <Link to="/dashboard" className="cursor-pointer">
+                    Dashboard
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/settings" className="cursor-pointer">Settings</Link>
+                  <Link to="/settings" className="cursor-pointer">
+                    Settings
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -125,11 +137,11 @@ const Navbar = () => {
       {/* Mobile menu */}
       <div
         className={cn(
-          "fixed inset-0 z-40 flex flex-col pt-20 bg-background/95 backdrop-blur-sm md:hidden transition-all duration-300 ease-in-out",
+          "transition-all duration-300 ease-in-out",
           mobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
       >
-        <div className="flex flex-col space-y-6 px-6 py-8">
+        <div className="flex flex-col space-y-6 px-6 py-8 bg-white">
           <Link
             to="/"
             className="text-lg font-medium py-2 border-b border-border/40"
@@ -201,7 +213,10 @@ const Navbar = () => {
         </div>
       </div>
 
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </header>
   );
 };
