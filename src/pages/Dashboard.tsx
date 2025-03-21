@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -191,53 +192,57 @@ const Dashboard = () => {
                     </div>
                   </TabsContent>
                   <TabsContent value="users" className="pt-4">
-                    <div className="h-[300px] flex items-center justify-center">
+                    <div className="h-[300px] overflow-hidden flex flex-col">
                       {users.length > 0 ? (
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>ID</TableHead>
-                              <TableHead>Email</TableHead>
-                              <TableHead>Full name</TableHead>
-                              <TableHead>Socials</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {users.map((user) => (
-                              <TableRow key={user.id}>
-                                <TableCell>{user.id}</TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    <Avatar>
-                                      <AvatarImage
-                                        src={
-                                          (
-                                            user.raw_user_meta_data as UserMetadata
-                                          ).avatar_url
-                                        }
-                                      />
-                                      <AvatarFallback>CN</AvatarFallback>
-                                    </Avatar>
-                                    {user.email}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  {
-                                    (user.raw_user_meta_data as UserMetadata)
-                                      .full_name
-                                  }
-                                </TableCell>
-                                <TableCell>
-                                  {(
-                                    user.raw_app_meta_data as UserAppMetadata
-                                  ).providers.join(", ")}
-                                </TableCell>
+                        <div className="overflow-auto">
+                          <Table>
+                            <TableHeader className="sticky top-0 bg-background z-10">
+                              <TableRow>
+                                <TableHead>ID</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Full name</TableHead>
+                                <TableHead>Socials</TableHead>
                               </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
+                            </TableHeader>
+                            <TableBody className="overflow-auto">
+                              {users.map((user) => (
+                                <TableRow key={user.id}>
+                                  <TableCell className="font-mono text-xs">{user.id}</TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <Avatar>
+                                        <AvatarImage
+                                          src={
+                                            (
+                                              user.raw_user_meta_data as UserMetadata
+                                            ).avatar_url
+                                          }
+                                        />
+                                        <AvatarFallback>
+                                          {user.email?.substring(0, 2).toUpperCase() || "UN"}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      {user.email}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    {
+                                      (user.raw_user_meta_data as UserMetadata)
+                                        .full_name
+                                    }
+                                  </TableCell>
+                                  <TableCell>
+                                    {(
+                                      user.raw_app_meta_data as UserAppMetadata
+                                    ).providers.join(", ")}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
                       ) : (
-                        <p className="text-muted-foreground">
+                        <p className="text-muted-foreground flex items-center justify-center h-full">
                           Users data visualization coming soon
                         </p>
                       )}
